@@ -1,0 +1,1039 @@
+---
+title: 'HarvardX: Capstone'
+subtitle: 'Predicting Subscription To Term Deposit Using The Bank Marketing Data Set'
+author: "Dwaipayan Chatterjee"
+date: "06/03/2022"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Abstract
+
+The core business of a financial institution can be broadly classified as lending and borrowing. Lending generates revenue to the bank in the form of interest from customers with some level of default risk involved. Borrowing, or rather attracting public’s savings into the bank is another source of revenue generation, which can be less risky than the former. A bank usually invests the customer’s long-term deposits into riskier financial assets which can earn the better return than what they pay to their customer. The customer, on the other hand, is assured a risk-free return on his/her deposit. However, the return on the fixed-term deposit is better than the savings account as the customer is deprived off the rights to use the fund prior to the maturity unless one is ready to compensate the bank as per the pre-specified agreements on the particular term deposit scheme.
+
+There is a stiff competition among the financial institutions/banks in increasing the customer base in their retail banking segment. Along with offering innovative products to the public, a huge amount of money is spent on marketing their products. The term deposit is very important among the diverse range of products and services offered by banks in retail banking segment. With advancement in data science and machine learning and availability of data, most banks are adapting to a data-driven decision. The dataset here consists of direct marketing by contacting the clients and assessing the success rate of sales made.
+
+In this project, we apply machine learning algorithms to build a predictive model of the data set to provide a necessary suggestion for marketing campaign team. The goal is to predict whether a client will subscribe a term deposit (variable y) with the help of a given set of dependent variables. This is a real dataset collected from a Portuguese bank that used its own contact-center to do direct marketing campaigns to motivate and attract the clients for their term deposit scheme to enhance the business.
+
+## Contents 
+
+- Chapter 1 - Introduction, Dataset Description, Purpose, Objectives and Basic Data Processing.
+- Chapter 2 - Purpose
+- Chapter 3 - Data Processing  
+- Chapter 4 - Exploratory Data Aalysis
+- Chapter 5 - Methodology
+- Chapter 6 - Model Building and Predictions
+- Chapter 7 - Results
+- Chapter 8 - Advantages & Limitations
+- Chapter 9 - Conclusion
+- Chapter 10 - Reference
+ 
+
+## 1. Introduction
+
+The objective of this project is to predict whether the client will subscribe (yes/no) to a term deposit at a Portuguese bank using the data from May 2008 to November 2010.The data set used is sourced from the UCI Machine Learning Repository and is based on the phone calls made (often more than once) for the marketing campaign to access if the term deposit(product/target feature) would be subscribed(Yes/No). The dataset can be accessed at https://archive.ics.uci.edu/ml/datasets/bank+marketing [1] . This project has two phases. While the Phase I focuses on data preprocessing and exploration, as covered in this report, the Phase II covers the model building and its performance analysis. 
+
+### Dataset Description:
+
+The data set for the project was downloaded from the website “UCI Machine Learning Repository” into an excel spreadsheet so that we could convert into CSV file and read in R studio. The data set is related to a Portuguese banking institution’s marketing campaign. The marketing campaigns were based on telemarketing. The contact information includes date, time and number of contacts made to a customer in order to get the response of “yes” or “no” to their term deposit. The whole data set is the bank’s client database consisting of 17 different variables/attribute which is elaborated below.
+
+- Number of Observations : 4521 Number of attributes : 17
+
+### Target Feature
+
+The desired target feature is “y” - “Has the client subscribed to a term deposit?”
+
+According to the dataset, “y” has two classes so it is identified as a binary classification problem.
+
+- Yes: The client has subscribed to the term deposit.
+- No: The client has not subscribed to the term deposit.
+
+### Descriptive Features
+
+The 17 inputs contained in the dataset are:
+
+- Bank client:
+
+- 1. age : the client’s age (numeric)
+
+- 2. job : type of job (categorical:‘admin.’,‘blue-collar’,‘entrepreneur’,‘housemaid’,‘management’,‘retired’,‘self-employed’,‘services’,‘student’,‘technician’,‘unemployed’,‘unknown’)
+
+- 3. marital : marital status (categorical: ‘divorced’, ‘married’, ‘single’, ‘unknown’; note: ‘divorced’ means divorced or widowed)
+
+- 4. education (categorical: ‘unknown’, ‘primary’, ‘secondary’, ‘tertiary’)
+
+5 - default: has credit in default? (categorical: ‘no’, ‘yes’, ‘unknown’)
+
+6 - balance: average yearly balance, in euros (numeric)
+
+7 - housing: has housing loan? (categorical: ‘no’, ‘yes’, ‘unknown’)
+
+8 - loan: has personal loan? (categorical: ‘no’,‘yes’,‘unknown’)
+
+-- Related with the last contact of the current campaign:
+
+9 - contact: contact communication type (categorical:“unknown”,“telephone”,“cellular”)
+
+10 - day: last contact day of the month (numeric)
+
+11 - month: last contact month of year (categorical: “jan”, “feb”, “mar”, …, “nov”, “dec”)
+
+12 - duration: last contact duration, in seconds (numeric)
+
+-- Other attributes:
+
+13 - campaign: number of contacts performed during this campaign and for this client (numeric, includes last contact)
+
+14 - pdays: number of days that passed by after the client was last contacted from a previous campaign (numeric, -1 means client was not previously contacted)
+
+15 - previous: number of contacts performed before this campaign and for this client (numeric)
+
+16 - poutcome: outcome of the previous marketing campaign (categorical: “unknown”,“other”,“failure”,“success”)
+
+-- Output variable (desired target):
+
+17 - y - has the client subscribed to the term deposit? (binary: “yes”,“no”)
+
+
+## 2. Purpose:
+
+The final goal of this project is to fit the possible set of the models to predict whether or not the marketing campaign is successful in the acquisition of customers into the bank’s term deposit. We analyzed the performances of three different machine learning algorithms by training and testing data sets and selected the best according to the degree of accuracy. This would suggest if the marketing campaign team of the Portuguse bank should continue investing in telemarketing their term deposit scheme.
+
+The objective of the project will be to include:
+
+-- Methodology for building algorithms
+-- Details of the algorithms and fine-tuning over the data set
+-- Performance comparison and choosing the best model
+-- Limitations of the algorithms
+-- Summary and Conclusion
+
+
+In this document, we create a Customer Segmentation Using thi dataset [3] and applying the courses/lessons learned during the HarvardX’s Data Science Professional Certificate program.
+
+## 3. DATA PREPROCESSING
+
+```{r If Require Install Libraries From C-RAN Repository, message=FALSE, warning=FALSE, include=FALSE}
+if(!require(readr)) install.packages("readr", repos = "http://cran.us.r-project.org")
+if(!require(knitr)) install.packages("knitr", repos = "http://cran.us.r-project.org")
+if(!require(mlr)) install.packages("mlr", repos = "http://cran.us.r-project.org")
+if(!require(ggplot2)) install.packages("ggplot2", repos = "http://cran.us.r-project.org")
+if(!require(magrittr)) install.packages("magrittr", repos = "http://cran.us.r-project.org")
+if(!require(cowplot)) install.packages("cowplot", repos = "http://cran.us.r-project.org")
+if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
+if(!require(gridExtra)) install.packages("gridExtra", repos = "http://cran.us.r-project.org")
+if(!require(GGally)) install.packages("GGally", repos = "http://cran.us.r-project.org")
+if(!require(stringr)) install.packages("stringr", repos = "http://cran.us.r-project.org")
+if(!require(glmnet)) install.packages("glmnet", repos = "http://cran.us.r-project.org")
+if(!require(doParallel)) install.packages("doParallel", repos = "http://cran.us.r-project.org")
+if(!require(class)) install.packages("class", repos = "http://cran.us.r-project.org")
+if(!require(gmodels)) install.packages("gmodels", repos = "http://cran.us.r-project.org")
+if(!require(TSA)) install.packages("TSA", repos = "http://cran.us.r-project.org")
+if(!require(FitAR)) install.packages("FitAR", repos = "http://cran.us.r-project.org")
+if(!require(car)) install.packages("car", repos = "http://cran.us.r-project.org")
+if(!require(FNN)) install.packages("FNN", repos = "http://cran.us.r-project.org")
+if(!require(reshape2)) install.packages("reshape2", repos = "http://cran.us.r-project.org")
+if(!require(e1071)) install.packages("e1071", repos = "http://cran.us.r-project.org")
+if(!require(caret)) install.packages("caret", repos = "http://cran.us.r-project.org")
+if(!require(psych)) install.packages("psych", repos = "http://cran.us.r-project.org")
+if(!require(dplyr)) install.packages("dplyr", repos = "http://cran.us.r-project.org")
+```
+
+## Preliminaries
+
+The necessary libraries are loaded and the downloaded dataset is imported in R using base R read.csv() function and assigned to an object “bank” and redundant variables were dropped before proceeding further with data preprocessing.
+
+Lets start with Loading the Following Library:
+
+```{r Loading Libraries, message=FALSE, warning=FALSE}
+library(readr)
+library(knitr)
+library(mlr)
+library(ggplot2)
+library(magrittr)
+library(cowplot)
+library(dplyr)
+library(gridExtra)
+library(GGally)
+library(stringr)    
+library(glmnet)     
+library(doParallel)
+library(class)
+library(gmodels)
+library(TSA)
+library(FitAR)
+library(car)
+library(FNN)       
+library(reshape2) 
+library(e1071)
+library(caret)
+library(psych)
+library(dplyr)
+```
+
+First, we are reading te data
+
+```{r import data, echo=FALSE, message=FALSE}
+bank <- read.csv("bank1.csv", header = TRUE, stringsAsFactors = FALSE)
+head(bank)
+```
+
+### Data Cleaning and Transformation
+
+To confirm that the feature type match the description as outlined in the documentation, str() function is used.
+
+```{r Data View, echo=FALSE, message=FALSE, warning=FALSE}
+str(bank)
+```
+
+Now The dataset is summarised feature wise to get a summary about the numeric features.
+
+```{r Basic Data Summary, echo=FALSE, message=FALSE, warning=FALSE}
+summarizeColumns(bank) %>% knitr::kable( caption = "Feature Summary of Bank Data")
+```
+
+### Scanning for NAs
+
+The dataset is scanned for missing values using is.na() function and no missing values are found. It can be assumed now that the dataset doesn’t contain any missing values.
+
+```{r Scanning for NAs, echo=FALSE, message=FALSE}
+colSums(is.na(bank))
+```
+
+### Scanning for white space
+
+In order to avoid any discrepancy later, extra white space, if any, is removed for all the character features.
+
+```{r Scanning for white space, echo=FALSE, message=FALSE,include=TRUE}
+bank[, sapply( bank, is.character )] <- sapply( bank[, sapply( bank, is.character )], trimws)
+```
+
+### Scanning for case errors
+
+Scanning case error means scanning inconsistency in categorical attributes caused by random upper/lower case mistakes. First we applied unique() function to show all unique available values in each specific categorical variable, on that basis, we can detect any odd cases.
+
+```{r Scanning for case errors, echo=FALSE, message=FALSE}
+unique(bank$job)
+unique(bank$marital)
+unique(bank$education)
+unique(bank$default)
+unique(bank$housing)
+unique(bank$loan)
+unique(bank$poutcome)
+```
+
+After performing the function, it is confirmed that there are no upper/lowercase errors in the outputs and they matched with the descriptive features.
+
+### Renaming some variable’s values
+
+There are 4 descriptive features (“default”, “housing”, “loan” and “target y”) that have the same binary responses (“yes” or “no”). In order to avoid confusion with target y during the visualisation/exploration, the values of these descriptive features are labelled differently as follows: (a) defaulter, no defaulter (b) housing loan, no housing loan (c) personal loan , no personal loan.
+
+```{r Renaming some variable’s values, echo=FALSE, message=FALSE, include=TRUE}
+bank$default <-ifelse(bank$default =="yes", "defaulter","no defaulter")
+bank$housing <-ifelse(bank$housing =="yes", "housing loan","no housing loan")
+bank$loan <-ifelse(bank$loan =="yes", "personal loan","no personal loan")
+```
+
+## 4. Exploratory Data Aalysis
+
+### Univariate Visualization
+
+For Univariate visualization, Bar chart and BoxHistogram Plot are used for categorical and numerical features respectively. For categorical features, Bar plot illustrates a bar chart with the categories on X axis and frequency/count on the Y axis and is useful in presenting the count by categories. For the numerical features, BoxHistogramPlot depicts a histogram and a box plot. While a histogram is useful in visualizing the shape of the underlying distribution, a box plot tells the range of the attribute and helps detect any outliers.
+
+### Categorical Features
+
+Figure 1 indicates that out of the total number of people contacted for marketing campaign, collectively close to 50 % are blue-collar, management professionals and technicians. Around 28,000 of those contacted in total are married (figure 2) while according to figure 3, 25,000 out of total are possessing secondary education. Almost all of the people have paid their dues on time with less than 1000 having default credit(figure 4). While more than half of the people have running housing loan(figure 5), comparatively fewer people, around 7000, avail personal loan(figure 6). The figure 7 indicates that the outcome of the previous calls for a substantial amount of individuals is unknown hence it can be deduced intuitively that most likely it has no bearing on the predicted outcome and can be left out during predictive modelling. The bar chart of the target feature, figure 8, illustrates that a large proportion of individuals do not subscribe to term deposit.
+
+```{r Job Visual, echo=FALSE, message=FALSE}
+job_sum <- bank%>% group_by(job) %>% summarise(count = n())
+job_sum$job <- job_sum$job %>% factor(levels = job_sum$job[order(-job_sum$count)]) 
+ggplot(job_sum,aes(x = job, y = count)) + geom_bar(stat="identity") +theme(axis.text.x=element_text(angle=45,hjust=1)) + labs(title = "Figure 1 - Job")
+```
+
+```{r Marital Status Visual, echo=FALSE, message=FALSE}
+marital_sum <- bank%>% group_by(marital) %>% summarise(count = n())
+marital_sum$marital <- marital_sum$marital %>% factor(levels = marital_sum$marital[order(-marital_sum$count)]) 
+ggplot(marital_sum,aes(x = marital, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 2 - Marital Status")
+```
+
+```{r Education, echo=FALSE, message=FALSE}
+education_sum <- bank%>% group_by(education) %>% summarise(count = n())
+education_sum$education <- education_sum$education %>% factor(levels = education_sum$education[order(-education_sum$count)]) 
+ggplot(education_sum,aes(x = education, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 3 - Education")
+```
+
+```{r Default Credit, echo=FALSE, message=FALSE}
+default_sum <- bank%>% group_by(default) %>% summarise(count = n())
+default_sum$default <- default_sum$default %>% factor(levels = default_sum$default[order(-default_sum$count)]) 
+ggplot(default_sum,aes(x = default, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 4 - Default Credit")
+```
+
+```{r Housing Loan, echo=FALSE, message=FALSE}
+housing_sum <- bank%>% group_by(housing) %>% summarise(count = n())
+housing_sum$housing <- housing_sum$housing %>% factor(levels = housing_sum$housing[order(-housing_sum$count)]) 
+ggplot(housing_sum,aes(x = housing, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 5 - Housing Loan")
+```
+
+```{r Personal loan, echo=FALSE, message=FALSE}
+loan_sum <- bank%>% group_by(loan) %>% summarise(count = n())
+loan_sum$loan <- factor(c(loan_sum$loan), levels = c("personal loan", "no personal loan"), ordered = TRUE)
+ggplot(loan_sum,aes(x = loan, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 6 - Personal loan")
+```
+
+```{r Previous Outcome, echo=FALSE, message=FALSE}
+poutcome_sum <- bank%>% group_by(poutcome) %>% summarise(count = n())
+poutcome_sum$poutcome <- poutcome_sum$poutcome %>% factor(levels = poutcome_sum$poutcome[order(-poutcome_sum$count)]) 
+ggplot(poutcome_sum,aes(x = poutcome, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 7 - Previous Outcome")
+```
+
+```{r Target Y, echo=FALSE, message=FALSE}
+y_sum <- bank%>% group_by(y) %>% summarise(count = n())
+y_sum$y <- y_sum$y %>% factor(levels = y_sum$y[order(-y_sum$count)]) 
+ggplot(y_sum,aes(x = y, y = count)) + geom_bar(stat="identity") + labs(title = "Figure 8 - Target Y")
+```
+
+### Numerical features
+
+Figure 9 depicts that most of the individuals aged between 30-60 years. The boxplot for the average yearly balance, figure 10, shows a median of zero signifying that most of the people contacted for this campaign have negative or nearly zero average yearly balance.Figure 11 instantiates that vast majority of people decide about the subscription in the first 500 seconds(8 minutes), with a median of around 300 seconds(5 minutes). Most of the clients were contacted only once or twice during this campaign as illustated in figure 12. The Figure 13 displays the number of days passed after the client/individual was last contacted and the median 0 without any Inter-quartile range reflects that almost all of the individuals are contacted for the first time during this campaign. The fact assumed from the interpretation of the figure 13 is confirmed by the figure 14 where number of contacts performed before this campaign to the same individual is plotted and the median is zero with no interquartile range means that no contacts were made previously to the clients contacted during this marketing campaign.
+
+```{r Age, echo=FALSE, message=FALSE}
+p <- ggplot(bank, aes(x = factor(1), y = age)) +   geom_boxplot(width = .50)
+p1 <- ggplot(bank, aes(x = age)) +
+  geom_density(fill = "orange", alpha = .2) +
+  geom_histogram(colour="white",aes(y=..density..),alpha = 1/2) +
+  geom_vline(xintercept= median(bank$age)) +
+  annotate("text",label = "Median",x = 39, y = 0.045) +
+  geom_vline(xintercept= mean(bank$age),linetype=2) +
+  annotate("text",label = "Mean",x = 41, y = 0.05) + labs(title = "Figure 9 - Age")
+plot_grid(p1, p + coord_flip() + theme(axis.title.y=element_blank(), 
+                                        axis.text.y=element_blank(),
+                                        axis.ticks.y = element_blank()), ncol=1, align="v",
+          rel_heights = c(2,1)) 
+```
+
+```{r Average Yearly Balance, echo=FALSE, message=FALSE}
+p_balance <- ggplot(bank, aes(x = factor(1), y = balance)) +geom_boxplot(width = .50)
+                  
+p1_balance <- ggplot(bank, aes(x = balance)) + labs(title = "Figure 10 - Average Yearly Balance") + geom_histogram(colour="white",aes(y=..count..), bins = 10)
+
+plot_grid(p1_balance, p_balance + coord_flip() + theme(axis.title.y=element_blank(), 
+                                       axis.text.y=element_blank(),
+                                       axis.ticks.y = element_blank()), ncol=1, align="v",
+          rel_heights = c(2,1))
+```
+
+```{r Duration of last call, echo=FALSE, message=FALSE}
+p_duration <- ggplot(bank, aes(x = factor(1), y = duration)) +   geom_boxplot(width = .50)
+p1_duration <- ggplot(bank, aes(x = duration)) +
+labs(title = "Figure 11 - Duration of last call") + geom_histogram(colour ="white", aes(y=..count..),alpha = 1/2)
+plot_grid(p1_duration, p_duration + coord_flip() + theme(axis.title.y=element_blank(),                                                        axis.text.y=element_blank(),
+                                                       axis.ticks.y = element_blank()), ncol=1, align="v",
+          rel_heights = c(2,1)) 
+```
+
+```{r Campaign - Contacts made to a client during this Campaign, echo=FALSE, message=FALSE}
+p_campaign <- ggplot(bank, aes(x = factor(1), y = campaign )) + labs(y ="Number of contact") + geom_boxplot(width = .50)
+p1_campaign <- ggplot(bank, aes(x = campaign)) + labs(title = "Figure 12 - Campaign", x ="Number of contact") + geom_histogram(colour ="white", aes(y=..count..),alpha = 1/2)
+plot_grid(p1_campaign, p_campaign + coord_flip() + theme(axis.title.y=element_blank(),                                                          axis.text.y=element_blank(),
+                                                         axis.ticks.y = element_blank()), ncol=1, align="v",
+          rel_heights = c(2,1)) 
+```
+
+```{r Number of days passed after the client was last contacted, echo=FALSE, message=FALSE}
+p_pdays <- ggplot(bank, aes(x = factor(1), y = pdays)) +  labs(y ="Number of days passed") + geom_boxplot(width = .50)
+p1_pdays <- ggplot(bank, aes(x = pdays)) +
+labs (title = "Figure 13 - Number of days passed after the client was last contacted",x ="Number of days passed") + geom_histogram(colour ="white", aes(y=..count..),alpha = 1/2)
+plot_grid(p1_pdays, p_pdays + coord_flip() + theme(axis.title.y=element_blank(),                                                          axis.text.y=element_blank(),
+                                                         axis.ticks.y = element_blank()), ncol=1, align="v",
+          rel_heights = c(2,1)) 
+```
+
+```{r Number of contacts performed before this campaign, echo=FALSE, message=FALSE}
+p_previous <- ggplot(bank, aes(x = factor(1), y = previous)) + labs(y = "Number of contacts") + geom_boxplot(width = .50)
+p1_previous <- ggplot(bank, aes(x = previous)) +
+  labs(title = "Figure 14 - Number of contacts performed before this campaign
+", x= "Number of contacts") + geom_histogram(colour ="white", aes(y=..count..),alpha = 1/2)
+plot_grid(p1_previous, p_previous + coord_flip() + theme(axis.title.y=element_blank(), 
+                                                         axis.text.y=element_blank(),
+                                                         axis.ticks.y = element_blank()), ncol=1, align="v",
+          rel_heights = c(2,1)) 
+```
+
+### Multivariate Visualization
+
+Each feature of the dataset is already explored individually and now these can be explored in relation to the target feature “y” with its respective levels (Yes/No). After this,likely relationship between two probable descriptive features in relation to the target feature is explored, followed by exploring the correlation amongst all the numerical features with the help of a scatter matrix.
+
+In the below chunk,the target feature is factorised and ordered and then divided into two separate subsets with “Yes” and “No” in order to make the further multivariate visualizations easy to plot and interpret.
+
+```{r Target Factorization, message=FALSE}
+#Factorise the target feature y
+bank$y <- factor(c(bank$y), levels = c("yes","no"), ordered = TRUE)
+```
+
+```{r Yes/No Segreagation,message=FALSE}
+#Divide the target feature into two seperate subsets with Yes and No
+bank_yes <- bank %>% filter(bank$y =="yes")
+bank_no <- bank %>% filter(bank$y =="no")
+```
+
+## Numeric Features Segregated by Target Y
+First all the numeric features are explored in relation to target feature except “Pdays” and “Previous” because almost all of the clients contacted during this campaign were contacted for the first time and drawing comparison and exploring on such basis will not yield any meaningful insights.Also majority of people were contacted only once or twice hence exploring “campaign” might also not yield anything meaningful. Hence campaign is also not explored with respect to target feature. Later, The categorical features are explored.
+
+-- Age
+
+Although people from all age group are subscribing to the term deposit however people somewhere between 30 and 40 avail it the most. Interestingly, the same age group has the highest count who did not subscribe to the term deposit. This may lead to an interesting fact that this is the most sought after group due to its highest proportion in total.
+
+```{r Age Factor, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data=bank, aes(age, fill =y)) + geom_histogram(aes(y=..count..)) + facet_grid(~y)
+```
+
+--- Balance
+
+A careful comparison between both the visualizations demonstrate that people with near zero or low balance are least likely to subscribe to term deposits and very few people with low average yearly balance opt for term deposit.
+
+```{r Balance, echo=FALSE, message=FALSE, warning=FALSE}
+balance_yes <- ggplot(bank_yes,aes(balance)) + geom_histogram(binwidth = 10) + labs(title = "Term Deposits Yes by Balance", x="Balance", y="Count") + xlim(c(0,2800)) + ylim(c(0,1000))
+balance_no <- ggplot(bank_no,aes(balance)) + geom_histogram(binwidth = 10) + labs(title = "Term Deposits No by Balance", x="Balance", y="Count") + xlim(c(0,2800)) +ylim(c(0,1000))
+grid.arrange(balance_yes,balance_no)
+```
+
+--- Duration
+
+The duration has an important bearing on the target outcome in a way that when duration is “0” , the term deposit outcome is always “No”. The other significant find is- almost all of the people who do not wish to subscribe term deposit decide in the first 8 minutes and people who wish to subscribe sometimes take little longer in getting convinced and deciding.
+
+```{r Duration, echo=FALSE, message=FALSE, warning=FALSE}
+balance_yes <- ggplot(bank_yes,aes(duration)) + geom_histogram(binwidth = 10) + labs(title = "Term Deposits Yes by Duration", x="Duration", y="Count") + xlim(c(0,2800))
+balance_no <- ggplot(bank_no,aes(duration)) + geom_histogram(binwidth = 10) + labs(title = "Term Deposits No by Duration", x="Duration", y="Count") + xlim(c(0,2800))
+grid.arrange(balance_yes,balance_no)
+```
+
+### Categorical Features Segregated by Target Y
+
+--- Job
+
+Out of the top three jobs(on the basis of total count), people in management jobs avail the highest number of term deposits followed by technicians. However, this figure/value seems quite obvious due to their high proportion in total count.
+
+```{r MJob, echo=FALSE, message=FALSE, warning=FALSE}
+bank_yes_job <-bank_yes%>% group_by(job) %>% summarise(count = n())
+bank_yes_job$y <- c(strrep("yes",1))
+bank_no_job <-bank_no%>% group_by(job) %>% summarise(count = n())
+bank_no_job$y <- c(strrep("no",1))
+bank_job <- rbind(bank_yes_job, bank_no_job)
+bank_job$y <- factor(c(bank_job$y), levels = c("yes","no"), ordered = TRUE)
+ggplot(bank_job,aes(x = job, y = count, fill = y)) + geom_bar(stat="identity", position ="dodge") + theme(axis.text.x=element_text(angle=45,hjust=1)) 
+```
+
+--- Marital status
+
+Due to high proportion of married people in total count, it is not surprising to see that this group tops the list in subscribing the term deposit in comparison to the other two groups.
+
+```{r Multi Marital status, echo=FALSE, message=FALSE, warning=FALSE}
+bank_yes_marital <- bank_yes%>% group_by(marital) %>% summarise(count = n())
+bank_no_marital <- bank_no  %>% group_by(marital) %>% summarise(count = n())
+bank_yes_marital$y <-c(strrep("yes",1))
+bank_no_marital$y <-c(strrep("no",1))
+bank_marital <- rbind(bank_yes_marital,bank_no_marital)
+bank_marital$y <- factor(c(bank_marital$y), levels = c("yes","no"), ordered = TRUE)
+ggplot(bank_marital,aes(x = marital, y = count, fill = y)) + geom_bar(stat="identity", position ="dodge") + facet_grid(~y)
+```
+
+--- Education
+
+Due to large proportion of secondary education in the total count, it’s not uncommon they top the chart in terms of subscribing the term deposit as well.
+
+```{r Multi Education, echo=FALSE, message=FALSE, warning=FALSE}
+bank_yes_education <-bank_yes%>% group_by(education) %>% summarise(count = n())
+bank_no_education <-bank_no%>% group_by(education) %>% summarise(count = n())
+bank_yes_education$y <- c(strrep("yes",1))
+bank_no_education$y <- c(strrep("no",1))
+bank_education <- rbind(bank_yes_education, bank_no_education)
+bank_education$y <- factor(c(bank_education$y), levels = c("yes","no"), ordered = TRUE)
+ggplot(bank_education,aes(x = education, y = count, fill = y)) + geom_bar(stat="identity", position ="dodge") + facet_grid(~y) + theme(axis.text.x=element_text(angle=45,hjust=1))
+```
+
+--- Default
+
+It is quite normal to see that “no defaulters” are opting for term deposit because of their high ratio in the total count as well.What is intriguing is that defaulters also subscribe to term deposit.
+
+```{r Multi Default, echo=FALSE, message=FALSE, warning=FALSE}
+bank_yes_default <-bank_yes%>% group_by(default) %>% summarise(count = n())
+bank_no_default <-bank_no%>% group_by(default) %>% summarise(count = n())
+bank_yes_default$y <- c(strrep("yes",1))
+bank_no_default$y <- c(strrep("no",1))
+bank_default <- rbind(bank_yes_default, bank_no_default)
+bank_default$y <- factor(c(bank_default$y), levels = c("yes","no"), ordered = TRUE)
+ggplot(bank_default,aes(x = default, y = count, fill = y)) + geom_bar(stat="identity", position ="dodge") + facet_grid(~y)
+```
+
+--- Housing
+
+It is fascinating to find that although housing loan has high proportion than no housing loan in the total count however their count in subscribing to term deposit is lesser than those who have not taken housing loan. It is probable that housing loan affects the propensity/inclination of a person towards investing in a term deposit.
+
+```{r Multi Housing, echo=FALSE, message=FALSE, warning=FALSE}
+bank_yes_housing <-bank_yes%>% group_by(housing) %>% summarise(count = n())
+bank_no_housing <-bank_no%>% group_by(housing) %>% summarise(count = n())
+bank_yes_housing$y <- c(strrep("yes",1))
+bank_no_housing$y <- c(strrep("no",1))
+bank_housing <- rbind(bank_yes_housing, bank_no_housing)
+bank_housing$y <- factor(c(bank_housing$y), levels = c("yes","no"), ordered = TRUE)
+ggplot(bank_housing,aes(x = housing, y = count, fill = y)) + geom_bar(stat="identity", position ="dodge") + facet_grid(~y)
+```
+
+--- Loan
+
+Due to large proportion of people having personal loan in the total count, It is not surprising if they are again topping the chart in terms of subscribing to term deposits. Therefore, it would be interesting to find whether a loan be it housing or personal affects a person’s likelihood of subscribing to term deposit. Consequently, this aspect is further explored later in this section with other features.
+
+```{r Multi Loan, echo=FALSE, message=FALSE, warning=FALSE}
+bank_yes_loan <-bank_yes%>% group_by(loan) %>% summarise(count = n())
+bank_no_loan <-bank_no%>% group_by(loan) %>% summarise(count = n())
+bank_yes_loan$y <- c(strrep("yes",1))
+bank_no_loan$y <- c(strrep("no",1))
+bank_loan <- rbind(bank_yes_loan, bank_no_loan)
+bank_loan$y <- factor(c(bank_loan$y), levels = c("yes","no"), ordered = TRUE)
+ggplot(bank_loan,aes(x = loan, y = count, fill = y)) + geom_bar(stat="identity", position ="dodge") + facet_grid(~y)
+```
+
+## Interaction between Categorical and Numeric Features
+
+-- Balance VS Default
+
+It is very difficult to draw any interpretation from the “defaulter” and balance due to the distorted boxplot but it is clear that people who pay their dues on time(i.e no defaulters) have slightly more average yearly balance and people who have more balance are more likely to subscribe to term deposits as the figure shows that the median balance for such a group is higher than the others. So,in short, we can infer from the figure that no defaulters having close to median yearly average balance are more likely to avail term deposits at the bank.
+
+```{r Balance VS Default, echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = bank, aes(x=default, y = balance, fill = y)) + geom_boxplot(width = .50) +scale_fill_manual(values = c("red","blue"))
+```
+
+--- Duration VS Housing
+
+It is interesting to note from this figure that whether people have housing loans or not, those subscribing to term loans spend more time on the marketing phone calls than those who do not subscribe to term deposits. Also, those who already have running housing loans spend more time on call duration in deciding about the subscription than those who have no house loans.
+
+```{r Duration VS Housing, echo=FALSE}
+ggplot(data = bank, aes(x=housing, y = duration, fill = y)) + geom_boxplot(width= .50) +scale_fill_manual(values = c("red","blue"))
+```
+
+--- Duration VS Loan
+
+People already having personal loans spend more time over phone during the marketing campaign than those who have no personal loans. Also, those who have personal loans are more likely to subscribe to term deposits. It can be said, that people availing personal loans give comparatively more time on phone and generally more likely to subscribe to the term deposit. However, all these are assumptions only and can be confirmed with further investigation in this matter.
+
+```{r Duration VS Loan, echo=FALSE}
+ggplot(data = bank, aes(x=loan, y = duration, fill = y)) + geom_boxplot(width= .50) +scale_fill_manual(values = c("red","blue"))
+```
+
+### Scatter plot matrix of Numerical Features by Target Y
+
+The following scatter plot for the significant numerical features is generated using “GGally” package in R. A scatter plot matrix is a collection of scatterplots organised into a grid or matrix where each scatterplot shows a relationship between pair of variables.This scatterplot matrix shows that none of the pair of numerical features have any significant relationship between them. This can be confirmed with the correlation proportion. None of the pairs have proportion any higher than 0.09 (positive or negative), some of them are as low as 0.02, hence can be considered uncorrelated.
+
+```{r Scatter plot matrix of Numerical Features by Target Y, echo=FALSE}
+data <- bank %>% select(age, balance, contact, day, month)
+pairs.panels(data, 
+             method = "pearson", # correlation method
+             hist.col = "#00AFBB",
+             density = TRUE,  # show density plots
+             ellipses = TRUE # show correlation ellipses
+             )
+```
+
+### 5. Methodology
+--- Building Machine Learning Algorithms
+
+As the dataset is cleaned and preprocessed in the first phase, three machine learning framework shortlisted for this problem are discussed below. Reading and preprocessing the data for each of the three algorithms are performed separately. There are further modification and manipulation of data tailored to need of specific algorithms. Prediction check, misclassification errors and cross table performed for each model.
+
+--- Standard Logistic Regression Using Lasso Regularisation
+
+One of the suitable approaches for this classification problem is the logistic regression algorithm as outcome variables in the data set contains binary responses. Selecting the significant variables for the model is the primary aspect of regression approach. Exploring the possibility of improving the model is another important aspect of the model building process. So, Lasso (least absolute shrinkage and selection operator) is applied to perform the variable selection and regularization to improve the prediction accuracy and interpretability of the model. It is mandatory to normalize the data set because of different range of data values. After appropriately normalization the variables using the min/max normalization method, the data set is split into the training group and testing group in the ratio of 80 to 20 percent. A standard logistic regression is built on the training set and test data set is used to get the confusion matrix. Detailed information is derived from the cross tabulation.
+
+--- K-Nearest Neighbor using Bias-Variance Trade-off
+
+The k-nearest neighbors’ algorithms(k-NN) is another sensible machine learning approach for this classification problem because K-NN algorithm is the simplest non-parametric method that we can effectively implement for classification problem. The random sample of the whole data set has been chosen to perform the algorithm. In this case, the data is split into three groups, training, validation and testing sets. Training and validation data for different values of k is used to run the nearest neighbours algorithm. The value of k for final K-NN classifier has been picked out from the bias-variance trade-off plot between training and validation sets. The algorithm is then applied to the test set to get the confusion matrix and misclassification error rate.
+
+--- Naïve Bayes Classifier
+
+Naïve Bayes classifier is a probability-based classifier for a classification machine learning problem. It is based on Bayes theorem with an assumption of independence between varibles. The response variable to be predicted here is classed as “yes” and “No” and fundamental nature of predictors appear to be relatively independent of each other. Moreover, because our training set is relatively small, the possibility of having noisy and unknown data is there, so this approach stands to be suitable. Another advantage of Naïve Bayes Classifier is that the probability of a prediction can be easily calculated. Also, a diagnostic analysis of the model is performed before any conclusion on the model is made.
+
+--- Performance Analysis of Algorithms
+
+Primary means of analysing the algorithms are using the misclassification error rate of prediction on the test data set. The model with least misclassification error represents a model with better accuracy. Definitely, the model with small misclassification error is chosen as the final model from the three algorithms. Overall adequacy of the algorithms was also performed.
+
+### 6. Model Building and Predictions
+
+--- Logistic Regression Model
+
+It needs to be taken care to ensure that the response/dependent variable is dichotomous (or binary) in order to apply logistic regression algorithm. As already discussed the response variable in this problem is to predict either “yes” or “no” for a term deposit. The character variables are converted into numeric and also to include the unknown responses of the attributes in the model, four new variables are created. The following chunks of code load the required library to perform the logistic regression.
+
+```{r Logistic Regression Model, echo=FALSE}
+# Since we're going to split our data we need to ensure the split is repeatable.
+set.seed(45)
+
+# Loading Data Again
+bank <- read.csv("bank1.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# This code of chunks create extra column for variables with unknown values
+bank$job_unk <- ifelse(bank$job == "unknown", 1, 0)
+bank$edu_unk <- ifelse(bank$education == "unknown", 1, 0)
+bank$cont_unk <- ifelse(bank$contact == "unknown", 1, 0)
+bank$pout_unk <- ifelse(bank$poutcome == "unknown", 1, 0)
+
+# This code of chunk make the character data into numeic format
+bank$job <- as.numeric(as.factor(bank$job))
+bank$marital <- as.numeric(as.factor(bank$marital))
+bank$education <- as.numeric(as.factor(bank$education))
+bank$default<- ifelse(bank$default == "yes", 1, 0)
+bank$housing <- ifelse(bank$housing== "yes", 1, 0)
+bank$loan<- ifelse(bank$loan== "yes", 1, 0)
+bank$month <- as.numeric(as.factor(bank$month))
+bank$contact <- as.numeric(as.factor(bank$contact))
+bank$poutcome <- as.numeric(as.factor(bank$poutcome))
+bank$y <- ifelse(bank$y== "yes", 1, 0)
+
+
+# create normalization function
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+# normalize the data to get rid of outliers if present in the data set
+bank <- as.data.frame(lapply(bank, normalize))
+
+# Creating design matrix and target vector
+mydata.X <- model.matrix(y ~ -1+., data= bank)
+mydata.X <- as.data.frame(mydata.X)
+mydata.Y <- bank$y
+
+#Now we split the data into training and test.  
+cuts <- c(training = .8, test = .2)
+g <- sample(cut(seq(nrow(mydata.X)), nrow(mydata.X)*cumsum(c(0,cuts)), labels = names(cuts)))
+final.X <- split(mydata.X, g)
+final.Y <- split(mydata.Y, g)
+```
+
+First of all, we build the Ridge Regrssion. This helps to interpret the data and suggest for further necessity of regularization.
+
+```{r Ridge Regrssion, echo=FALSE}
+bank.ridge <- cv.glmnet(x= as.matrix(final.X$training), y = as.matrix(final.Y$training), nfolds=10, 
+                        type.measure="class", family='binomial', alpha = 0, nlambda=100)
+print(bank.ridge$lambda.min)
+```
+
+```{r Ridge Regrssion Plot, echo=FALSE}
+plot(bank.ridge)
+```
+
+When lambda = 0, the penalty term has no effect, and ridge regression will produce the least squares estimates. Since, our minimumm value of the lambda is tends to zero. Thus, from the above plot it is conformed that we do not need to do the regularization.
+
+The following code manipulates the coeffiecient of the ridge regression
+
+```{r Ridge Regrssion Manipulation, echo=FALSE}
+# Create a dataframe with the coefficient values
+ridge.coefs <- as.data.frame(as.vector(coef(bank.ridge, s = bank.ridge$lambda.min)), 
+                             row.names = rownames(coef(bank.ridge)))
+names(ridge.coefs) <- 'coefficient'
+```
+
+Now we perform regression using LASSO setting alpha to be 1.
+
+```{r LASSO, echo=FALSE}
+bank.lasso <- cv.glmnet(x = as.matrix(final.X$training), y = as.matrix(final.Y$training), nfolds=10, 
+                        type.measure="class", parallel=TRUE, family='binomial', alpha = 1, nlambda=100)
+print(bank.lasso$lambda.min)
+```
+
+```{r LASSO Plot, echo=FALSE}
+plot(bank.lasso)
+```
+
+Clearly the lasso leads to qualitatively similar behavior to ridge regression. Since best vallue of value of lambda is still close to zero. thus from the above plot of misclassification error versus lambda, it is conformed that we do not need to do the regularization.
+
+The following code manipulates the coeffiecient of the lasso regression
+
+```{r Lasso Coeff, echo=FALSE}
+# Create a dataframe with the coefficient values
+lasso.coefs <- as.data.frame(as.vector(coef(bank.lasso, s = bank.lasso$lambda.min)), 
+                             row.names = rownames(coef(bank.lasso)))
+print(lasso.coefs)
+```
+
+Get the features with the non zero lasso coefficient. From the above output it is observed that all the above predictors would be important to perform the logistic regression. The following code manipulates the data into the new matrix with the nonzero features and re split the data into training and test sets.
+
+```{r Non Zero Lasso Features, echo=FALSE}
+names(lasso.coefs) <- 'coefficient'
+features <- rownames(lasso.coefs)[lasso.coefs != 0]
+print(features)
+```
+
+From the above output it is observed that all the above predictors would be important to perform the logistic regression. The following code manipulates the data into the new matrix with the nonzero features and re split the data into training and test sets.
+
+```{r New Matrix, echo=FALSE}
+# Creates a new matrix with only the non-zero features
+lasso_bank <- bank[, intersect(colnames(bank), features)]
+# Re-do the split into training and test
+bank <- as.matrix(lasso_bank)
+bank <- as.data.frame(bank)
+bank$Y <- mydata.Y
+bank_1 <- split(bank, g)
+```
+
+Now standard logistic regression is run using non zero features identified by a LASSO.
+
+```{r Logistic Regrssion, echo=FALSE}
+model_std <- glm(Y ~ ., family = binomial(link = "logit"),  data = bank_1$training)
+summary(model_std)
+```
+
+```{r Features of Logistic, echo=FALSE}
+names(model_std$coefficients)
+```
+
+Prediction and misclassification of the model
+
+```{r Prediction and misclassification of the model, echo=FALSE}
+predictions <- predict.glm(model_std, newdata=bank_1$test, type= "response")
+predictions[predictions > 0.5] <- 1
+predictions[predictions <= 0.5] <- 0
+1 - length(predictions[predictions == bank_1$test$Y]) / length(predictions)
+```
+
+Confusion matrix from the test data
+
+```{r Confusion matrix, echo=FALSE}
+table(predictions, bank_1$test$Y)
+```
+
+The confusion matrix with a more infomative outputs offered by CrossTable() in gmodels package helps analyse the prediction accuracy of the model. The output table includes proportion in each cell that tells the percentage of table’s row, column or overall total counts on the class of the response variable.
+
+From the cross table below it is observed that using seed as 45, 92% of people not subscribing the term deposit in the data set is predicted correctly while 65% of people subscribing term deposit is predicted correctly. Thus, from the confusion matrix or Cross table we can safely say that the model perfoms well to predict the customer subscribe term deposit with misclassification error of 9%.
+
+```{r CrossTable, echo=FALSE}
+CrossTable(predictions, bank_1$test$Y, prop.chisq = FALSE)
+```
+
+#Residual Analysis
+
+The follwing code builds the function to perform residual analysis which can be used to do residual checks for all the three models.
+
+```{r Residual Analysis, echo=FALSE}
+residual.analysis <- function(model, std = TRUE){
+  if (std == TRUE){
+    res.model = rstandard(model)
+  }else{
+    res.model = residuals(model)
+  }
+  par(mfrow=c(2,2))
+  plot(res.model,type='o',ylab='Standardised residuals', main="Time series plot of standardised residuals")
+  abline(h=0)
+  hist(res.model,main="Histogram of standardised residuals")
+  qqnorm(res.model,main="QQ plot of standardised residuals")
+  qqline(res.model, col = 2)
+  acf(res.model,main="ACF of standardised residuals")
+  print(shapiro.test(res.model))
+}
+
+residual.analysis(model_std)
+```
+
+#Durbin-Watsson test for autocorrelation of residuals
+
+```{r Durbin Watson, echo=FALSE}
+durbinWatsonTest(model_std)
+```
+
+```{r Variance Inflation Factor, echo=FALSE}
+vif(model_std)
+```
+
+## K-Nearest Neighbor Model
+
+```{r K-Nearest Neighbor Model, echo=FALSE}
+bank<-read.csv("bank1.csv", stringsAsFactors = FALSE, header = T)
+#View(bank)
+
+# This code of chunks creates extra column for variables with unknown values
+bank$job_unk <- ifelse(bank$job == "unknown", 1, 0)
+bank$edu_unk <- ifelse(bank$education == "unknown", 1, 0)
+bank$cont_unk <- ifelse(bank$contact == "unknown", 1, 0)
+bank$pout_unk <- ifelse(bank$poutcome == "unknown", 1, 0)
+
+# This code of chunk make the character data into numeric format
+bank$job <- as.numeric(as.factor(bank$job))
+bank$marital <- as.numeric(as.factor(bank$marital))
+bank$education <- as.numeric(as.factor(bank$education))
+bank$default<- ifelse(bank$default == "yes", 1, 0)
+bank$housing <- ifelse(bank$housing== "yes", 1, 0)
+bank$loan<- ifelse(bank$loan== "yes", 1, 0)
+bank$month <- as.numeric(as.factor(bank$month))
+bank$contact <- as.numeric(as.factor(bank$contact))
+bank$poutcome <- as.numeric(as.factor(bank$poutcome))
+bank$y <- ifelse(bank$y== "yes", 1, 0)
+
+# Creates normalization function
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+# normalize the data
+bank <- as.data.frame(lapply(bank, normalize))
+# We create our design matrix and target vector
+mydata <- bank
+mydata.X <- model.matrix(y ~ -1+., data= bank)
+mydata.X <- as.data.frame(mydata.X)
+mydata.Y <- bank$y
+
+# Splitting data into training, test and validation sets.
+cuts <- c(training = .7, test = .2, validation = .1)
+g <- sample(cut(seq(nrow(mydata.X)), nrow(mydata.X)*cumsum(c(0,cuts)), labels = names(cuts)))
+final.X <- split(mydata.X, g)
+final.Y <- split(mydata.Y, g)
+raw <- split(mydata, g)
+```
+
+The following chunk of codes select the random sample of size 500 from the population and split the data in to training, validation and test sets.
+
+```{r KNN Split, echo=FALSE}
+size <- 4000 
+sp <- split(mydata, list(mydata$y))
+samples <- lapply(sp, function(x) x[sample(1:nrow(x), 500, replace = FALSE), ])
+mydata_sample <- do.call(rbind, samples)
+row.names(mydata_sample) <- NULL
+
+# this function creats the design matrix and target variables
+mydata_sample.X <- model.matrix(y ~ -1+., data= mydata_sample)
+mydata_sample.X <- as.data.frame(mydata_sample.X)
+mydata_sample.Y <- mydata_sample$y
+
+# We will split the data into training, test and validation sets.
+cuts <- c(training = .6, test = .2, validation = .2)
+
+g <- sample(cut(seq(nrow(mydata_sample.X)), nrow(mydata_sample.X)*cumsum(c(0,cuts)), labels = names(cuts)))
+final_sample.X <- split(mydata_sample.X, g)
+final_sample.Y <- split(mydata_sample.Y, g)
+raw <- split(mydata_sample, g)
+```
+
+--- K-NN Prediction and misclassification Error
+
+On the validation set, initially a random value of k=3 is chosen to make the prediction of the algorithm. Also, to see the accuracy of the model the misclassification error is compouted. The computations are demonstrated by the following codes.
+
+```{r K-NN Prediction and misclassification Error, echo=FALSE}
+nn <- 3 # we choose the random value for validation set 
+knn.pred <- knn(final_sample.X$training, final_sample.X$validation, final_sample.Y$training,  k = nn, prob = TRUE)
+
+error <- 1 - length(final_sample.Y$validation[final_sample.Y$validation==knn.pred]) / length(final_sample.Y$validation)
+error
+```
+
+The code in the for loop will create a data frame in order to plot the bias-variance tradeoff.
+
+```{r Bias-Variance Tradeoff Algorithm, echo=FALSE}
+maxiter <- 50
+bv <- data.frame(k=integer(), Training=double(), Validation=double())
+for (nn in 1:maxiter){
+  knn.pred1 <- knn(final_sample.X$training, final_sample.X$training, final_sample.Y$training, k=nn)
+  
+  knn.pred2 <- knn(final_sample.X$training, final_sample.X$validation, final_sample.Y$training, k=nn) 
+                 
+  cat("iteration: ", include=FALSE, nn, "\n") 
+  terr <- 1 - length(final_sample.Y$training[final_sample.Y$training==knn.pred1]) / length(final_sample.Y$training)
+  verr <- 1 - length(final_sample.Y$validation[final_sample.Y$validation==knn.pred2]) / length(final_sample.Y$validation)
+  rec <- data.frame(k=nn, Training=terr, Validation=verr)
+  bv <- rbind(bv, rec)
+}
+```
+
+-- Bias- Variance Trade-off
+
+Following the execution of the above code the bias variance can be ploted as follows.It is clear that as the number of neighburs (k) increases, the misclassification error increases and stabilizes between 30 to 40 percent. The validation set also shows that the error rate is steady within similar range as the training set.
+Also, from the plot it appears the “best” value of K is between 4 or 8. We choose 4 as it is a simpler model and this will be used it to score our test set
+
+```{r Bias- Variance Trade-off, echo=FALSE}
+bv_melt <- melt(bv, id.vars = "k", variable.name = "Source", value.name = "Error")
+title <- "Bias-Variance Tradeoff"
+ggplot(bv_melt, aes(x=k, y=Error, color=Source)) +
+  geom_point(shape=16) + geom_line() +
+  xlab("Number of Neighbours (K)") +
+  ylab("Misclassification Rate") +
+  ggtitle(title) +
+  theme(plot.title = element_text(color="#666666", face="bold", size=18, hjust=0)) +
+  theme(axis.title = element_text(color="#666666", face="bold", size=14)) 
+```
+
+```{r Number of Neighbour, echo=FALSE}
+nn <- 4
+knn.pred3 <- knn(final_sample.X$training, final_sample.X$test, final_sample.Y$training, k=nn)
+```
+
+-- Misclassification error in the test set
+
+```{r Misclassification error, echo=FALSE}
+error1 <- 1 - length(final_sample.Y$test[final_sample.Y$test==knn.pred3]) / length(final_sample.Y$test)
+error1
+```
+
+Confusion matrix from test set
+
+```{r Confusion matrix from test set, echo=FALSE}
+table(knn.pred3, final_sample.Y$test)
+```
+
+Cross Table will return the confusion matrix with more infomation where we can get the proportion of each cell value making easy coparision. From the following cross table it is observed that the model predicted 62% of non-subscription of term deposit correctly and 66% of the subscription of term deposit correctly.
+
+```{r Cross Table KNN, echo=FALSE}
+CrossTable(knn.pred3, final_sample.Y$test, prop.chisq = FALSE)
+```
+
+### Naive Bayes Model
+
+Loading the data and Preprocessing
+The following chunks of code load the required library to perfrom the Naive Bayes regression
+
+```{r Naive Bayes Model, echo=FALSE}
+set.seed(45)
+
+#Import data to R
+bank<-read.csv("bank1.csv", stringsAsFactors = FALSE, header = T)
+#View(bank)
+
+# This code of chunks creates extra column for variables with unknown values
+bank$job_unk <- ifelse(bank$job == "unknown", 1, 0)
+bank$edu_unk <- ifelse(bank$education == "unknown", 1, 0)
+bank$cont_unk <- ifelse(bank$contact == "unknown", 1, 0)
+bank$pout_unk <- ifelse(bank$poutcome == "unknown", 1, 0)
+
+# This code of chunk make the character data into data frame format
+bank$job <- as.numeric(as.factor(bank$job))
+bank$marital <- as.numeric(as.factor(bank$marital))
+bank$education <- as.numeric(as.factor(bank$education))
+bank$default<- ifelse(bank$default == "yes", 1, 0)
+bank$housing <- ifelse(bank$housing== "yes", 1, 0)
+bank$loan<- ifelse(bank$loan== "yes", 1, 0)
+bank$month <- as.numeric(as.factor(bank$month))
+bank$contact <- as.numeric(as.factor(bank$contact))
+bank$poutcome <- as.numeric(as.factor(bank$poutcome))
+
+# We need the target varible in the factor format.
+bank$y <- as.factor(bank$y)
+
+ind = sample(2, nrow(bank), replace = TRUE, prob=c(0.7, 0.3))
+trainset = bank[ind == 1,]
+testset = bank[ind == 2,]
+
+# This code returns the dimention of our training and test sets. first column represents the numebr of observations and second represents number  of variables. 
+dim(trainset)
+```
+
+```{r dimesion of testset NB, echo=FALSE}
+dim(testset)
+```
+
+The following code returns the percentage of customer subscribing term deposit from whole data set
+
+```{r percentage of customer subscribing term deposit, echo=FALSE}
+pctPos <- nrow(testset[testset$y == "yes",]) / nrow(testset)
+pctPos
+```
+
+Only eleven percentage of people in our test set suscribe the term deposite. Let’s see how much will predict by our model.
+
+Lets Employ the naive Bayes function to build the classifier
+
+```{r naive Bayes function, echo=FALSE}
+model <- naiveBayes(trainset[, !names(trainset) %in% c("y")],
+                      trainset$y, na.action = na.pass)
+# Type classifier to examine the function call, a-priori probability, and conditional
+#probability
+model
+```
+
+The priori and conditional probabilities has been observed from the above outputs.
+
+Rename the data (predictors) to performe the prediction
+
+```{r predictors NB, echo=FALSE}
+x<- testset[, !names(testset) %in% c("y")]
+y <- testset$y
+```
+
+--- Prediction and misclassification Error
+
+```{r Prediction and misclassification Error NB, echo=FALSE}
+bayes.table <- table(predict(model, x), y)
+bayes.table
+```
+
+```{r NB Inference, echo=FALSE}
+1-sum(bayes.table[row(bayes.table)==col(bayes.table)])/sum(bayes.table)
+```
+
+We got about 17% misclassification error while doing the prediction of customer suscribe to term deposit.
+
+--- Confusion matrix
+
+```{r Confusion matrix NB, echo=FALSE}
+confusionMatrix(bayes.table)
+```
+
+The confusion matrix above shows the 82% of acuracy and 95% confidence interval of the perdicted acuracy. The cross table from the confusion matrix shows that model predicted more closely for the customer who did not suscribe term deposit but for thoese custome who had suscribed term deposit has been predicted badly.
+
+### 7. Results
+
+As already seen the three models we have built have their own accuracy of predicting whether a client will say “yes” or “no” to a term deposit of the bank. As expected there is some variation in the misclassification error rate among the three classification algorithm.
+
+#Algorithms Error Rate
+
+--- Logistic Regression Model 9.40%
+
+--- K-NN classifier 36.5%
+
+--- Naive Bayes Classifier 17.95%
+
+Based on the misclassification error rate, the most reliable model for the data set appears to be the logistic regression model with just 9.4%.
+
+### Adequacy of Logistic Regression Model
+#Note: refer to the outputs from the end of the regression algorithms
+
+--- Residual Analysis
+
+The residual analysis includes a check for normality, autocorrelation and time series plot to inspect if there is any trend present in the residuals. As per the previous output in the regression algorithm section, there are no autocorrelation parts in this model confirming a white noise process. However, the residuals are not purely normally distributed which is seen from Shapiro-Wilk test and histogram of the standardized residuals. Time series plot of residuals indicates residuals have almost equal change in variances and non- existence of trends.
+
+--- Variable Inflation Factor (VIF) Test for Multicollinearity of Variables
+
+Presence of collinearity among the variables negatively affects logistic regression model. The measure of VIF for variables greater than 5 is usually considered to create collinearity. From the output, it is seen almost all the variables have VIF less than 5 which proves that logistic regression is not influenced by collinearity. There are few attributes with VIF greater than 5, but they are not significant to the model.
+
+--- Durbin-Watson test of the model
+
+Durbin-Watson is another test to find the effect of autocorrelation in a data set. The appropriate hypothesis for this test is H0: Errors (residuals) are uncorrelated H1: Errors (residuals) are correlated
+
+Since the p-value is less than 0.05 we have enough evidence to reject H0. This implies that the residuals are correlated.
+
+### 8. Advantages & Limitations
+
+The advantage of logistic regression is that it is easy to interpret, it directs model logistic probability, and provides a confidence interval for the result. However, the main drawback of the logistic algorithm is that it suffers from multicollinearity and, therefore, the explanatory variables must be linearly independent. But, it is certain that the variables of the model do not exhibit multicollinearity as shown by VIF test.
+
+Some limitations of logistic regression approach in context to the above model are
+
+--- The model has some class of unknown predictors which are significant in the model. These variables actually do not carry any useful information fundamentally but their significance might affect the predictability of the model.
+
+--- Residuals of the model are not normally distributed when doing the residual analysis are not reliable though the model demonstrates a good accuracy.
+
+--- Residuals are correlated in the Durbin-Watson test. The test for autocorrelation using the Durbin-Watson test proved that the residuals are correlated. This shows that the residuals have an autocorrelation effect which might accept the model’s accuracy.
+
+### 9. Conclusion
+
+In this project, the dataset chosen has 16 descriptive features and 1 target feature. All features are taken into account except “Contact”, “day” and “month” as they are not contributing anything significant to the outcome. Later, after exploring the features individually it is found that other attributes -“campaign”, “poutcome”, “pday” and“previous” are related to the previous campaigns and have no significant bearing on the outcome/target feature of the current campaign as almost all of the people contacted during this campaign are new. Consequently, these were also omitted from multivariate exploration. The data Chosen is found to have no missing values, typo errors, case errors or extra white spaces after checking thoroughly during data preprocessing. The dataset has outliers in almost all the numerical attributes which can be seen during the individual visualizations. However, these were not removed or imputed because of two reasons: First, these outliers were found to be a part of the dataset and not just random figures and removing them would have completely modified the data. Secondly, for removing or handling any outliers(if they are in significant proportion or otherwise), subject matter expertise is needed and due to lack of desired domain expertise/knowledge it was decided to proceed without handling them. The dataset is explored to dive deep and gain meaningful insights from data that can be considered and attended to during model building in phase 2.
+
+From the study conducted, the results are impressive and convincing in terms of using a machine learning algorithm to decide on the marketing campaign of the bank. Almost all of the attributes contribute significantly to the building of a predictive model. Among the three classification approach used to model the data, the logistic regression model yielded the best accuracy with just 9.4% misclassification error rate. This model is simple and easy to implement.
+
+The bank marketing manager can identify the potential client by using the model if the client’s information like education, housing loan, Personal loan, duration of the call, number of contacts performed during this campaign, previous outcomes, etc is available. This will help in minimizing the cost to the bank by avoiding to call customers who are unlikely to subscribe the term deposit. They can run a more successful telemarketing campaign using this model.
+
+\newpage
+
+## 10. References 
+
+[1] UCI Machine Learning Repository, Bank Marketing Data Set viewed online on
+    (https://archive.ics.uci.edu/ml/datasets/Bank+Marketing)
+
+[2] Rafael A. Irizarry (2020), Introduction to Data Science: Data Analysis and Prediction Algorithms with R
+
+[3] https://www.edx.org/professional-certificate/harvardx-data-science↩
+
+[4] An Introduction to Statistical Learning: With Applications in R by Gareth M. James, Daniela Witten, Trevor Hastie, Robert Tibshirani
+
+
